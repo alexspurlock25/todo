@@ -1,11 +1,11 @@
 import { useState } from "react"
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import db from '../firebase.config'
+
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
 import Navbar from "react-bootstrap/Navbar"
 import Container from "react-bootstrap/Container"
-import uuid from 'react-uuid'
-import { db } from '../firebase'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 
 function Controls() {
     const [title, setTitle] = useState('')
@@ -16,6 +16,8 @@ function Controls() {
             id: serverTimestamp(),
             title: title,
             isDone: false
+        }).finally(() => {
+            setTitle('')
         })
     }
 

@@ -1,19 +1,22 @@
-import { useState, useEffect } from "react";
-import { db } from '../firebase';
-import { collection, getDocs } from 'firebase/firestore';
-import ListGroup from "react-bootstrap/ListGroup";
+import { useState, useEffect } from "react"
+import db from '../firebase.config'
+
+import { collection, getDocs, orderBy, query } from 'firebase/firestore'
+import ListGroup from "react-bootstrap/ListGroup"
 
 function TodoList() {
     const [todos, setTodos] = useState([])
+
     useEffect(() => {
-        getTodos(db)
+        getTodos().then((data) => {
+            setTodos(data)
+        })
     })
 
-    async function getTodos(db) {
-        const todoCol = collection(db, 'todo');
-        const todoSnapshot = await getDocs(todoCol);
-        const todoList = todoSnapshot.docs.map(doc => doc.data());
-        setTodos(todoList)
+    async function getTodos() {
+        const notesSnapshot = await getDocs(query(collection(db, "todo"), orderBy('id', 'desc')));
+        const notesList = notesSnapshot.docs.map((doc) => doc.data());
+        return notesList;
     }
     
     return (
