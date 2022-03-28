@@ -2,7 +2,7 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## DONT't FORGET your Firebase api config. (`.env.local.your-copy`)
+## DONT'T FORGET your Firebase api config. (`.env.local.your-copy`)
 
 I have provided your copy of .env.local. It's file name .env.local.your-copy. Go see that file; there are instructions there for you to configure your Firebase config
 
