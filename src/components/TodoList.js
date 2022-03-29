@@ -1,10 +1,5 @@
-import { useState, useEffect } from "react"
-import db from '../firebase.config'
-
-import { collection, getDocs, orderBy, query } from 'firebase/firestore'
+import { useEffect, useState } from "react"
 import ListGroup from "react-bootstrap/ListGroup"
-import Button from "react-bootstrap/Button"
-
 import Todo from '../components/Todo'
 
 const data = [
@@ -16,26 +11,18 @@ const data = [
 function TodoList() {
     const [todos, setTodos] = useState(data)
 
-    // useEffect(() => {
-        // getTodos().then((data) => {
-        //     setTodos(data)
-        // })
-    // })
-
-    // async function getTodos() {
-    //     const notesSnapshot = await getDocs(query(collection(db, "todo"), orderBy('id', 'desc')));
-    //     const notesList = notesSnapshot.docs.map((doc) => doc.data());
-    //     return notesList;
-    // }
+    useEffect(() => {
+        console.log("Changed")
+    }, [todos])
 
     function handleDelete(id) {
-        const filteredTodos = todos.filter(todo => todo.id != id)
-        setTodos(filteredTodos)
+        const newArr = todos.filter(todo => todo.id !== id)
+        setTodos(newArr)
     }
 
     function handleIsDone(id) {
-        let todoIndex = todos.findIndex(todo => todo.id === id)
-        let newArr = todos
+        const todoIndex = todos.findIndex(todo => todo.id === id)
+        const newArr = todos
         newArr[todoIndex] = { ...newArr[todoIndex], isDone: !newArr[todoIndex].isDone}
         setTodos(newArr)
     }

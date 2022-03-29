@@ -1,6 +1,4 @@
 import { useState } from "react"
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
-import db from '../firebase.config'
 
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
@@ -10,15 +8,8 @@ import Container from "react-bootstrap/Container"
 function Controls() {
     const [title, setTitle] = useState('')
 
-    function handleAdd(e) {
-        if (title == null || title == "") return
-        addDoc(collection(db,'todo'), {
-            id: serverTimestamp(),
-            title: title,
-            isDone: false
-        }).finally(() => {
-            setTitle('')
-        })
+    function handleAdd() {
+        console.log("handleAdd")
     }
 
     return (
