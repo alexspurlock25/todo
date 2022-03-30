@@ -2,6 +2,8 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+NOTE: Don't forget to check out the `.env.local.your-copy` file to set up your own todo server on firebase.
+
 ## Available Scripts
 
 In the project directory, you can run:
