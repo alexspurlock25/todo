@@ -1,43 +1,44 @@
 import { useEffect, useState } from "react"
+import uuid from "react-uuid"
 import ListGroup from "react-bootstrap/ListGroup"
 import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
 import Container from "react-bootstrap/Container"
 import Todo from '../components/Todo'
+import { addDoc, collection, deleteDoc, getDoc, where, query, onSnapshot, Timestamp, doc, documentId, getDocs } from 'firebase/firestore'
 
-let data = [
-    { id: 1, title: "Todo 1", desc: "Todo 1 desc", isDone: false },
-    { id: 2, title: "Todo 2", desc: "Todo 1 desc", isDone: true },
-    { id: 3, title: "Todo 3", desc: "Todo 1 desc", isDone: false },
-    { id: 4, title: "Todo 4", desc: "Todo 1 desc", isDone: false },
-    { id: 5, title: "Todo 5", desc: "Todo 1 desc", isDone: true },
-    { id: 6, title: "Todo 6", desc: "Todo 1 desc", isDone: false }
-]
+import { db } from '../firebase.config'
+
 
 function TodoList() {
+    const collectionRef = collection(db, 'todo')
     const [add, setAdd] = useState(false)
     const [title, setTitle] = useState('')
-    const [todos, setTodos] = useState(data)
+    const [todos, setTodos] = useState([])
 
     useEffect(() => {
-        console.log(`Todo Len ${todos.length}`)
-        setAdd(false)
-    }, [add, todos])
+        getTodos()
+    }, [add]);
 
-    function handleAdd() {
-        setAdd(true)
-        const lastId = todos[todos.length - 1].id
-        todos.push({id: lastId + 1, title: title, isDone: false})
-        setTodos(todos)
-        setTitle('')
+    function getTodos() {    
+        onSnapshot(collectionRef, (snapshot) =>
+            setTodos(snapshot.docs.map((doc) => doc.data()))
+        );
     }
 
-    function handleDelete(id) {
-        const newArr = todos.filter(todo => todo.id !== id)
-        setTodos(newArr)
+    async function handleAdd() {
+        // TODO: empty title text box on add
+        await addDoc(collectionRef, { id: uuid(), title: title, isDone: false })
+        setAdd(true)
+    }
+
+    async function handleDelete(id) {
+        // TODO: get delete to work
+        console.log(`ID: ${id} to delete...`)
     }
 
     function handleIsDone(id) {
+        // TODO: get this to work with firebase, not with a local array
         const todoIndex = todos.findIndex(todo => todo.id === id)
         const newArr = todos
         newArr[todoIndex] = { ...newArr[todoIndex], isDone: !newArr[todoIndex].isDone}
@@ -46,9 +47,11 @@ function TodoList() {
     }
 
     function handleIsDoneStr(id) {
-        const todoIndex = todos.findIndex(todo => todo.id === id)
-        console.log(todos[todoIndex].isDone)
-        return todos[todoIndex].isDone
+        const docRef = documentId()
+        console.log(docRef)
+        // const todoIndex = todos.findIndex(todo => todo.id === id)
+        // console.log(todos[todoIndex].isDone)
+        // return todos[todoIndex].isDone
     }
     
     return (
