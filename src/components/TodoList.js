@@ -10,52 +10,43 @@ import { addDoc, collection, deleteDoc, where, query, doc, getDocs, updateDoc } 
 import { db } from '../firebase.config'
 
 function TodoList() {
-    const collectionRef = collection(db, 'todo')
+    const rootDir = 'todo'
+    const collectionRef = collection(db, rootDir)
     const [title, setTitle] = useState('')
     const [todos, setTodos] = useState([])
 
     useEffect(() => {
         getTodos()
-    }, [todos]);
+    }, []);
 
-    function getTodos() {    
-        // This did not work for me. It had weird side effects on other functions suchs as add, remove and isDone
-        // onSnapshot(collectionRef, (snapshot) =>
-        //     setTodos(snapshot.docs.map((doc) => doc.data()))
-        // );
-        // TODO: Figure out why this functions is reading the firestore documents 48K times
-        getDocs(collectionRef).then(snaps => {
-            setTodos(snaps.docs.map(doc => doc.data()))
-            console.log('getDocs()')
-        })
+    function getTodos() {
+        // TODO: Figure out if its normal for this to run infinitely
+        getDocs(collectionRef)
+            .then(snaps => {
+                const firestoreTodos = snaps.docs.map(doc => doc.data())
+                setTodos(firestoreTodos)
+                console.log('getDocs()')
+            })
     }
 
     function handleAdd() {
-        addDoc(collectionRef, { id: uuid(), title: title, isDone: false }).then(() => {
-            setTitle('')
-        })
+        addDoc(collectionRef, { id: uuid(), title: title, isDone: false } )
+            .then(() => setTitle('') )
     }
 
-    function handleDelete(id) {
-        const q = query(collectionRef, where("id", "==", id));
-        
-        getDocs(q).then(response => {
-            const docRef = response.docs[0].ref
-            deleteDoc(docRef)
-        })
+    function handleDelete(todoId) {
+        getDocs( query(collectionRef, where("id", "==", todoId)) )
+            .then(response => deleteDoc(response.docs[0].ref) )
     }
 
-    function handleIsDone(id) {
-        const q = query(collectionRef, where("id", "==", id));
-        const docsRef = getDocs(q)
-        docsRef.then(docs => {
-            docs.forEach(item => {
-                const docId = item.id
-                const isDone = item.data()['isDone']
-                const docRef = doc(db, `todo/${docId}`)
-                updateDoc(docRef, {isDone: !isDone})
+    function handleIsDone(todoId) {
+        getDocs( query(collectionRef, where("id", "==", todoId)) )
+            .then(documents => {
+                documents.forEach(document => {
+                    const docRef = doc(db, `${rootDir}/${document.id}`)
+                    updateDoc(docRef, {isDone: !document.data()['isDone']})
+                })
             })
-        })
     }
     
     return (
@@ -67,9 +58,7 @@ function TodoList() {
                 </Form>
             </Container>
             <ListGroup variant="flush" className="w-50 m-auto pt-5">
-                {
-                    todos.map(todo => <Todo key={todo.id} todo={todo} deleteFun={handleDelete} isDoneFun={handleIsDone}/>)
-                }
+                { todos.map(todo => <Todo key={todo.id} todo={todo} deleteFun={handleDelete} isDoneFun={handleIsDone}/>) }
             </ListGroup>
         </Container>
     )
