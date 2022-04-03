@@ -9,7 +9,6 @@ import { addDoc, collection, deleteDoc, where, query, doc, getDocs, updateDoc } 
 
 import { db } from '../firebase.config'
 
-
 function TodoList() {
     const collectionRef = collection(db, 'todo')
     const [title, setTitle] = useState('')
@@ -19,35 +18,37 @@ function TodoList() {
         getTodos()
     }, [todos]);
 
-    async function getTodos() {    
+    function getTodos() {    
         // This did not work for me. It had weird side effects on other functions suchs as add, remove and isDone
         // onSnapshot(collectionRef, (snapshot) =>
         //     setTodos(snapshot.docs.map((doc) => doc.data()))
         // );
         // TODO: Figure out why this functions is reading the firestore documents 48K times
-        await getDocs(collectionRef).then(snaps => {
+        getDocs(collectionRef).then(snaps => {
             setTodos(snaps.docs.map(doc => doc.data()))
+            console.log('getDocs()')
         })
     }
 
-    async function handleAdd() {
-        await addDoc(collectionRef, { id: uuid(), title: title, isDone: false })
-        setTitle('')
+    function handleAdd() {
+        addDoc(collectionRef, { id: uuid(), title: title, isDone: false }).then(() => {
+            setTitle('')
+        })
     }
 
-    async function handleDelete(todoId) {
-        const q = query(collectionRef, where("id", "==", todoId));
+    function handleDelete(id) {
+        const q = query(collectionRef, where("id", "==", id));
         
-        await getDocs(q).then(response => {
+        getDocs(q).then(response => {
             const docRef = response.docs[0].ref
             deleteDoc(docRef)
         })
     }
 
-    async function handleIsDone(todoId) {
-        const q = query(collectionRef, where("id", "==", todoId));
+    function handleIsDone(id) {
+        const q = query(collectionRef, where("id", "==", id));
         const docsRef = getDocs(q)
-        await docsRef.then(docs => {
+        docsRef.then(docs => {
             docs.forEach(item => {
                 const docId = item.id
                 const isDone = item.data()['isDone']
