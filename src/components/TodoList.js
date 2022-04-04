@@ -5,7 +5,9 @@ import Button from 'react-bootstrap/Button'
 import Form from 'react-bootstrap/Form'
 import Container from "react-bootstrap/Container"
 import Todo from '../components/Todo'
-import { addDoc, collection, deleteDoc, where, query, doc, getDocs, updateDoc } from 'firebase/firestore'
+import {
+    addDoc, collection, deleteDoc, where, query, doc, getDocs, updateDoc, orderBy, serverTimestamp
+} from 'firebase/firestore'
 
 import { db } from '../firebase.config'
 
@@ -17,26 +19,25 @@ function TodoList() {
 
     useEffect(() => {
         getTodos()
-    }, []);
+    }, [todos]);
 
     function getTodos() {
         // TODO: Figure out if its normal for this to run infinitely
-        getDocs(collectionRef)
+        getDocs( query(collectionRef, orderBy('dateAdded')) )
             .then(snaps => {
-                const firestoreTodos = snaps.docs.map(doc => doc.data())
-                setTodos(firestoreTodos)
+                setTodos( snaps.docs.map(doc => doc.data()) )
                 console.log('getDocs()')
-            })
+        })
     }
 
     function handleAdd() {
-        addDoc(collectionRef, { id: uuid(), title: title, isDone: false } )
-            .then(() => setTitle('') )
+        addDoc(collectionRef, { id: uuid(), title: title, isDone: false, dateAdded: serverTimestamp()} )
+            .then(() => setTitle(''))
     }
 
     function handleDelete(todoId) {
         getDocs( query(collectionRef, where("id", "==", todoId)) )
-            .then(response => deleteDoc(response.docs[0].ref) )
+            .then(response => deleteDoc(response.docs[0].ref))
     }
 
     function handleIsDone(todoId) {
