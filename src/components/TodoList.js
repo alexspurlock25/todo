@@ -1,20 +1,18 @@
-import { useEffect, useState } from "react"
-import uuid from "react-uuid"
-import ListGroup from "react-bootstrap/ListGroup"
-import Button from 'react-bootstrap/Button'
-import Form from 'react-bootstrap/Form'
-import Container from "react-bootstrap/Container"
-import Todo from '../components/Todo'
-import {
-    addDoc, collection, deleteDoc, where, query, doc, getDocs, updateDoc, orderBy, serverTimestamp
-} from 'firebase/firestore'
-
+// configs
 import { db } from '../firebase.config'
+
+// react and firebase
+import { useEffect, useState } from "react"
+import { collection, deleteDoc, where, query, doc, getDocs, updateDoc, orderBy } from 'firebase/firestore'
+
+// custom components
+import Todo from '../components/Todo'
+// bootstrap
+import ListGroup from "react-bootstrap/ListGroup"
 
 function TodoList() {
     const rootDir = 'todo'
     const collectionRef = collection(db, rootDir)
-    const [title, setTitle] = useState('')
     const [todos, setTodos] = useState([])
 
     useEffect(() => {
@@ -22,46 +20,35 @@ function TodoList() {
     }, [todos]);
 
     function getTodos() {
-        // TODO: Figure out if its normal for this to run infinitely
         getDocs( query(collectionRef, orderBy('dateAdded')) )
-            .then(snaps => {
-                setTodos( snaps.docs.map(doc => doc.data()) )
+            .then(snapshot => {
+                // TODO: Figure out if its normal for this to run infinitely
+                setTodos( snapshot.docs.map(doc => doc.data()) )
                 console.log('getDocs()')
         })
     }
 
-    function handleAdd() {
-        addDoc(collectionRef, { id: uuid(), title: title, isDone: false, dateAdded: serverTimestamp()} )
-            .then(() => setTitle(''))
-    }
-
     function handleDelete(todoId) {
-        getDocs( query(collectionRef, where("id", "==", todoId)) )
-            .then(response => deleteDoc(response.docs[0].ref))
+        const collectionQuery = query(collectionRef, where("id", "==", todoId))
+        getDocs( collectionQuery ).then(documents =>
+            deleteDoc(documents.docs[0].ref)
+        )
     }
 
     function handleIsDone(todoId) {
-        getDocs( query(collectionRef, where("id", "==", todoId)) )
-            .then(documents => {
-                documents.forEach(document => {
-                    const docRef = doc(db, `${rootDir}/${document.id}`)
-                    updateDoc(docRef, {isDone: !document.data()['isDone']})
-                })
-            })
+        const collectionQuery = query(collectionRef, where("id", "==", todoId))
+        getDocs(collectionQuery).then(documents => {
+            const docRef = documents.docs[0].ref
+            const updatedIsDone = !documents.docs[0].data()['isDone']
+
+            updateDoc(docRef, {isDone: updatedIsDone})
+        })
     }
     
     return (
-        <Container>
-            <Container className="d-flex justify-content-center mt-5" fluid>
-                <Form className="d-flex align-items-center">
-                    <Form.Control className="me-2" type="text" placeholder="Add Todo..." value={title} onChange={(e) => setTitle(e.target.value)} />
-                    <Button variant="primary" onClick={handleAdd}>Add</Button>
-                </Form>
-            </Container>
-            <ListGroup variant="flush" className="w-50 m-auto pt-5">
-                { todos.map(todo => <Todo key={todo.id} todo={todo} deleteFun={handleDelete} isDoneFun={handleIsDone}/>) }
-            </ListGroup>
-        </Container>
+        <ListGroup variant="flush" className="w-50 m-auto pt-5">
+            { todos.map(todo => <Todo key={todo.id} todo={todo} deleteFun={handleDelete} isDoneFun={handleIsDone}/>) }
+        </ListGroup>
     )
 }
 
