@@ -3,7 +3,7 @@ import { db } from "../firebase.config";
 
 import { useState } from "react";
 import uuid from "react-uuid";
-import {addDoc, collection, serverTimestamp} from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
 // bootstrap
 import Container from "react-bootstrap/Container";
